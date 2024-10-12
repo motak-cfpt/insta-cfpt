@@ -19,7 +19,7 @@ services:
     # labels:
     #   - "traefik.http.routers.api.rule=Host(`instak.cfpt.info`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
     networks:
-      - instak.cfpt.info
+      - internal-network
 
   api:
     build: ./api
@@ -30,7 +30,7 @@ services:
     volumes:
       - ./api/src:/var/www/html
     networks:
-      - instak.cfpt.info
+      - internal-network
 
   public:
     build: ./public
@@ -41,7 +41,7 @@ services:
       - "traefik.http.routers.whoami.rule=Host(`instak.cfpt.info`)"
       - "traefik.http.routers.whoami.entrypoints=web"
     networks:
-      - instak.cfpt.info
+      - internal-network
 
   mongo:
     image: mongo
@@ -56,7 +56,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: admin
       MONGO_INITDB_DATABASE: instacfpt
     networks:
-      - instak.cfpt.info
+      - internal-network
 
   mongo-express:
     image: mongo-express
@@ -68,7 +68,7 @@ services:
       ME_CONFIG_BASICAUTH_PASSWORD: admin
       ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo:27017/
     networks:
-      - instak.cfpt.info
+      - internal-network
 
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
@@ -81,7 +81,7 @@ services:
     volumes:
       - '/:/host:ro,rslave'
     networks:
-      - instak.cfpt.info
+      - internal-network
 
   mongo-exporter:
     image: percona/mongodb_exporter:0.39.0
@@ -94,7 +94,7 @@ services:
       - "--collect-all"
       - "--compatible-mode"
     networks:
-      - instak.cfpt.info
+      - internal-network
 
   prometheus:
     image: prom/prometheus:latest
@@ -106,7 +106,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
     networks:
-      - instak.cfpt.info
+      - internal-network
 
   grafana:
     image: grafana/grafana:latest
@@ -116,7 +116,7 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
     networks:
-      - instak.cfpt.info
+      - internal-network
 
 volumes:
   grafana-data:
@@ -124,5 +124,5 @@ volumes:
 
 
 networks:
-  instak.cfpt.info:
+  internal-network:
     driver: bridge
