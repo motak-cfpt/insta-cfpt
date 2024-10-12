@@ -1,0 +1,36 @@
+services:
+  php-app:
+    build:
+      context: ./app  # Chemin correct vers le dossier contenant le Dockerfile.app
+      dockerfile: Dockerfile.app
+    container_name: app
+    volumes:
+      - ./app:/var/www/html  # Utilisation du bon chemin vers tes fichiers de source
+      - vendor:/var/www/html/vendor
+    ports:
+      - "8085:80"  # Expose le port 80
+    depends_on:
+      - rabbitmq
+
+  php-consumer:
+    build:
+      context: ./app  # Chemin correct vers le dossier contenant le Dockerfile.consumer
+      dockerfile: Dockerfile.consumer
+    container_name: consumer
+    volumes:
+      - ./app:/var/www/html  # Utilisation du bon chemin vers tes fichiers de source
+      - vendor:/var/www/html/vendor
+    depends_on:
+      - rabbitmq
+    command: php /var/www/html/thumbnails.php
+
+# @TODO: Ajouter le service RabbitMQ
+  rabbitmq:
+    image: "rabbitmq:management"
+    container_name: rabbitmq
+    ports:
+      - "15672:15672"  # Interface de gestion
+      - "5672:5672"    # Port pour le service RabbitMQ
+
+volumes:
+  vendor:

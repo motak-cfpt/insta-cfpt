@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload de photo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        input[type="file"] {
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .preview {
+            margin-top: 20px;
+            max-width: 100%;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Uploader une photo</h1>
+        <form id="uploadForm">
+            <input type="file" id="fileInput" accept="image/*" required>
+            <br>
+            <button type="submit">Upload</button>
+        </form>
+
+        <div class="preview-container">
+            <img id="preview" class="preview" style="width:50%;height: 50%" src="" alt="Prévisualisation"
+                style="display:none;">
+        </div>
+
+        <div class="message" id="message"></div>
+
+        <script>
+            const form = document.getElementById('uploadForm');
+            const fileInput = document.getElementById('fileInput');
+            const preview = document.getElementById('preview');
+            const messageDiv = document.getElementById('message');
+
+            // Prévisualisation de l'image avant upload
+            fileInput.addEventListener('change', function () {
+                const file = fileInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Gestion de l'envoi de l'image
+            form.addEventListener('submit', function(event) {
+            event.preventDefault();  // Empêche la soumission classique du formulaire
+            const file = fileInput.files[0];
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('upload.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(result => {
+                    messageDiv.innerText = result;  // Afficher le message de succès/échec
+                })
+                .catch(error => {
+                    messageDiv.innerText = "Erreur lors de l'upload";
+                    console.error('Erreur:', error);
+                });
+            }
+        });
+        </script>
+
+</body>
+
+</html>
