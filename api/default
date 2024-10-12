@@ -14,15 +14,15 @@ server {
 	# Règles à appliquer pour toutes les routes accessibles depuis la racine du site web
 	location / {
 
-		# Autorisation de CORS seulement pour les requêtes en provenance de insta.cfpt.info
-		add_header 'Access-Control-Allow-Origin' 'http://insta.cfpt.info' always;
+		# Autorisation de CORS seulement pour les requêtes en provenance de instak.cfpt.info
+		add_header 'Access-Control-Allow-Origin' 'http://instak.cfpt.info' always;
 		add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
 		add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
 
 		# La requête HTTP OPTIONS est dans certains cas envoyée en premier par le navigateur
 		# pour déterminer les autorisations CORS sans divulguer d'informations sensibles
 		if ($request_method = 'OPTIONS') {
-			add_header 'Access-Control-Allow-Origin' 'http://insta.cfpt.info' always;
+			add_header 'Access-Control-Allow-Origin' 'http://instak.cfpt.info' always;
 			add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
 			add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
 			add_header 'Access-Control-Max-Age' 1728000;

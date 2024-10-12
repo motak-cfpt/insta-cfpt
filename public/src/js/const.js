@@ -1,4 +1,4 @@
-export const API_URL = 'http://api.insta.cfpt.info';
+export const API_URL = 'http://api.instak.cfpt.info';
 
 // Codes HTTP de succès
 export const HTTP_OK = 200;

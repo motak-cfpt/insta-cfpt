@@ -17,9 +17,9 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     # labels:
-    #   - "traefik.http.routers.api.rule=Host(`insta.cfpt.info`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+    #   - "traefik.http.routers.api.rule=Host(`instak.cfpt.info`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
     networks:
-      - insta.cfpt.info
+      - instak.cfpt.info
 
   api:
     build: ./api
@@ -30,7 +30,7 @@ services:
     volumes:
       - ./api/src:/var/www/html
     networks:
-      - insta.cfpt.info
+      - instak.cfpt.info
 
   public:
     build: ./public
@@ -41,7 +41,7 @@ services:
       - "traefik.http.routers.whoami.rule=Host(`instak.cfpt.info`)"
       - "traefik.http.routers.whoami.entrypoints=web"
     networks:
-      - insta.cfpt.info
+      - instak.cfpt.info
 
   mongo:
     image: mongo
@@ -56,7 +56,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: admin
       MONGO_INITDB_DATABASE: instacfpt
     networks:
-      - insta.cfpt.info
+      - instak.cfpt.info
 
   mongo-express:
     image: mongo-express
@@ -68,7 +68,7 @@ services:
       ME_CONFIG_BASICAUTH_PASSWORD: admin
       ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo:27017/
     networks:
-      - insta.cfpt.info
+      - instak.cfpt.info
 
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
@@ -81,7 +81,7 @@ services:
     volumes:
       - '/:/host:ro,rslave'
     networks:
-      - insta.cfpt.info
+      - instak.cfpt.info
 
   mongo-exporter:
     image: percona/mongodb_exporter:0.39.0
@@ -94,7 +94,7 @@ services:
       - "--collect-all"
       - "--compatible-mode"
     networks:
-      - insta.cfpt.info
+      - instak.cfpt.info
 
   prometheus:
     image: prom/prometheus:latest
@@ -106,7 +106,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
     networks:
-      - insta.cfpt.info
+      - instak.cfpt.info
 
   grafana:
     image: grafana/grafana:latest
@@ -116,7 +116,7 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
     networks:
-      - insta.cfpt.info
+      - instak.cfpt.info
 
 volumes:
   grafana-data:
@@ -124,5 +124,5 @@ volumes:
 
 
 networks:
-  insta.cfpt.info:
+  instak.cfpt.info:
     driver: bridge

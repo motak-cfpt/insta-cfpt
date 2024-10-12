@@ -12,7 +12,7 @@ function isJsonObject(obj) {
 describe('API Tests', () => {
     const JWT_TOKEN_LENGTH = 149;
 
-    const baseURL = 'http://api.insta.cfpt.info';
+    const baseURL = 'http://api.instak.cfpt.info';
 
     const HTTP_OK = 200;
     const HTTP_BAD_REQUEST = 400;

@@ -8,7 +8,7 @@ RUN apt update
 # Installe le serveur web
 RUN apt install -y nginx
 
-# Déploie la configuration Nginx avec support PHP et autorisations CORS pour insta.cfpt.info
+# Déploie la configuration Nginx avec support PHP et autorisations CORS pour instak.cfpt.info
 COPY default /etc/nginx/sites-available/
 
 # Installe php
