@@ -1,36 +1,128 @@
 services:
-  php-app:
-    build:
-      context: ./app  # Chemin correct vers le dossier contenant le Dockerfile.app
-      dockerfile: Dockerfile.app
-    container_name: app
-    volumes:
-      - ./app:/var/www/html  # Utilisation du bon chemin vers tes fichiers de source
-      - vendor:/var/www/html/vendor
+  traefik:
+    image: "traefik:v3.0"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      # - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.watch=true" # Correct here
+      - "--entrypoints.web.address=:80"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addServicesLabels=true"
     ports:
-      - "8085:80"  # Expose le port 80
-    depends_on:
-      - rabbitmq
-
-  php-consumer:
-    build:
-      context: ./app  # Chemin correct vers le dossier contenant le Dockerfile.consumer
-      dockerfile: Dockerfile.consumer
-    container_name: consumer
+      - "80:80"
+      - "8080:8080"
     volumes:
-      - ./app:/var/www/html  # Utilisation du bon chemin vers tes fichiers de source
-      - vendor:/var/www/html/vendor
-    depends_on:
-      - rabbitmq
-    command: php /var/www/html/thumbnails.php
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    # labels:
+    #   - "traefik.http.routers.api.rule=Host(`insta.cfpt.info`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+    networks:
+      - insta.cfpt.info
 
-# @TODO: Ajouter le service RabbitMQ
-  rabbitmq:
-    image: "rabbitmq:management"
-    container_name: rabbitmq
+  api:
+    build: ./api
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.api.rule=Host(`api.instak.cfpt.info`)"
+      - "traefik.http.routers.api.entrypoints=web"
+    volumes:
+      - ./api/src:/var/www/html
+    networks:
+      - insta.cfpt.info
+
+  public:
+    build: ./public
+    volumes:
+      - ./public/src:/usr/share/nginx/html
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.whoami.rule=Host(`instak.cfpt.info`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+    networks:
+      - insta.cfpt.info
+
+  mongo:
+    image: mongo
+    restart: "unless-stopped"
     ports:
-      - "15672:15672"  # Interface de gestion
-      - "5672:5672"    # Port pour le service RabbitMQ
+      - 27017:27017
+    volumes:
+      - mongo-data:/data/db
+      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: instacfpt
+    networks:
+      - insta.cfpt.info
+
+  mongo-express:
+    image: mongo-express
+    restart: "unless-stopped"
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo:27017/
+    networks:
+      - insta.cfpt.info
+
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    command:
+      - '--path.rootfs=/host'
+    ports:
+      - "9100:9100"
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+    networks:
+      - insta.cfpt.info
+
+  mongo-exporter:
+    image: percona/mongodb_exporter:0.39.0
+    restart: unless-stopped
+    ports:
+      - "9216:9216"
+    environment:
+      MONGODB_URI: mongodb://admin:admin@mongo:27017
+    command:
+      - "--collect-all"
+      - "--compatible-mode"
+    networks:
+      - insta.cfpt.info
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: "unless-stopped"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yaml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    networks:
+      - insta.cfpt.info
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: "unless-stopped"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - insta.cfpt.info
 
 volumes:
-  vendor:
+  grafana-data:
+  mongo-data:
+
+
+networks:
+  insta.cfpt.info:
+    driver: bridge

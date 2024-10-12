@@ -1,0 +1,41 @@
+server {
+	# Le serveur web écoute sur le port IPV4 http 80 (seulement en production on basculera sur le port sécurisé https 443)
+	listen 80 default_server;
+	# Même port pour l'adresse IPV6
+	listen [::]:80 default_server;
+
+	# Dossier racine où se trouve notre site web
+	root /var/www/html;
+
+	# Server_name permet de ne répondre que pour un nom de domaine explicite.
+	# la valeur '_' est utilisée en phase de développement pour accepter tous les noms de domaine
+	server_name _;
+
+	# Règles à appliquer pour toutes les routes accessibles depuis la racine du site web
+	location / {
+
+		# Autorisation de CORS seulement pour les requêtes en provenance de insta.cfpt.info
+		add_header 'Access-Control-Allow-Origin' 'http://insta.cfpt.info' always;
+		add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
+		add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
+
+		# La requête HTTP OPTIONS est dans certains cas envoyée en premier par le navigateur
+		# pour déterminer les autorisations CORS sans divulguer d'informations sensibles
+		if ($request_method = 'OPTIONS') {
+			add_header 'Access-Control-Allow-Origin' 'http://insta.cfpt.info' always;
+			add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
+			add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
+			add_header 'Access-Control-Max-Age' 1728000;
+			add_header 'Content-Type' 'text/plain charset=UTF-8';
+			add_header 'Content-Length' 0;
+			return 204;
+		}
+
+		# Scripts d'initialisation de l'environnement d'exécution PHP
+		include snippets/fastcgi-php.conf;
+
+		# La communication entre le serveur web nginx et l'interprêteur PHP
+		# s'effectue via ce fichier appelé une socket
+		fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+	}
+}
